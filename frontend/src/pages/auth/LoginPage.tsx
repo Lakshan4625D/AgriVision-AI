@@ -1,10 +1,49 @@
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+
 import AuthLayout from "../../layouts/AuthLayout";
 import Logo from "../../components/common/Logo";
 import Card from "../../components/ui/Card";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 
+import { login } from "../../api/auth";
+import { useAuthStore } from "../../store/authStore";
+
 export default function LoginPage() {
+  const navigate = useNavigate();
+
+  const loginStore = useAuthStore((state) => state.login);
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    try {
+      setLoading(true);
+
+      const response = await login({
+        email,
+        password,
+      });
+
+      if (response.success) {
+        loginStore(response.user);
+
+        navigate("/dashboard");
+      } else {
+        alert(response.message);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Unable to connect to server.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <AuthLayout>
       <Card className="max-w-md">
@@ -29,6 +68,8 @@ export default function LoginPage() {
             <Input
               type="email"
               placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
 
@@ -40,6 +81,8 @@ export default function LoginPage() {
             <Input
               type="password"
               placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
           </div>
 
@@ -49,20 +92,29 @@ export default function LoginPage() {
               Remember Me
             </label>
 
-            <button className="font-medium text-blue-600 hover:text-blue-700">
+            <button
+              type="button"
+              className="font-medium text-blue-600 hover:text-blue-700"
+            >
               Forgot Password?
             </button>
           </div>
 
-          <Button>
-            Sign In
+          <Button
+            onClick={handleLogin}
+            disabled={loading}
+          >
+            {loading ? "Signing In..." : "Sign In"}
           </Button>
 
           <div className="text-center text-sm text-slate-500">
             Don't have an account?{" "}
-            <button className="font-semibold text-blue-600 hover:text-blue-700">
+            <Link
+              to="/register"
+              className="font-semibold text-blue-600 hover:text-blue-700"
+            >
               Register
-            </button>
+            </Link>
           </div>
         </div>
       </Card>

@@ -1,35 +1,40 @@
 import { create } from "zustand";
 
-type User = {
+export interface User {
   id: number;
   full_name: string;
   email: string;
-  role: string;
-};
+  role_id: number;
+}
 
-type AuthState = {
+interface AuthState {
   user: User | null;
   token: string | null;
+  isAuthenticated: boolean;
 
-  login: (user: User, token: string) => void;
+  login: (user: User) => void;
 
   logout: () => void;
-};
+}
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
 
   token: null,
 
-  login: (user, token) =>
+  isAuthenticated: false,
+
+  login: (user) =>
     set({
       user,
-      token,
+      token: "temp-token",
+      isAuthenticated: true,
     }),
 
   logout: () =>
     set({
       user: null,
       token: null,
+      isAuthenticated: false,
     }),
 }));
