@@ -55,7 +55,7 @@ node_modules/
 *.joblib
 *.pickle
 *.pkl
-models/
+/ML_Backend/models/
 ml_models/
 artifacts/
 
@@ -74,8 +74,6 @@ static/uploads/
 
 # But allow these:
 !app/static/default.png
-!app-backend/models/
-!frontend/models/
 
 ###############################################
 # ARCHIVES / INSTALLERS
