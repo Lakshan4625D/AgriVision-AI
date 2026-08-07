@@ -1,4 +1,6 @@
-export interface AnalysisRequest {
+import api from "./axios";
+
+export interface SaveAnalysisRequest {
   user_id: number;
 
   image_name: string;
@@ -20,7 +22,10 @@ export interface AnalysisRequest {
   longitude: number;
 }
 
-export interface AnalysisResponse extends AnalysisRequest {
-  id: number;
-  created_at: string;
+export async function saveAnalysis(
+  data: SaveAnalysisRequest
+) {
+  const response = await api.post("/analysis", data);
+
+  return response.data;
 }

@@ -54,6 +54,44 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- =====================================================
+-- Analysis Table
+-- =====================================================
+
+CREATE TABLE analysis_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    user_id INT NOT NULL,
+
+    image_name VARCHAR(255),
+
+    crop_type VARCHAR(100),
+
+    quality VARCHAR(50),
+
+    stage VARCHAR(100),
+
+    stage_confidence FLOAT,
+
+    stress_class VARCHAR(100),
+
+    stress_confidence FLOAT,
+
+    severity FLOAT,
+
+    severity_label VARCHAR(50),
+
+    latitude DOUBLE,
+
+    longitude DOUBLE,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+);
+
+-- =====================================================
 -- Seed Roles
 -- =====================================================
 

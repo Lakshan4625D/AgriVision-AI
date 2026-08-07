@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 
 export interface User {
   id: number;
@@ -10,38 +9,37 @@ export interface User {
 
 interface AuthState {
   user: User | null;
-  token: string | null;
   isAuthenticated: boolean;
 
   login: (user: User) => void;
   logout: () => void;
 }
 
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set) => ({
+const storedUser = localStorage.getItem("user");
+
+const user: User | null = storedUser
+  ? JSON.parse(storedUser)
+  : null;
+
+export const useAuthStore = create<AuthState>((set) => ({
+  user,
+  isAuthenticated: user !== null,
+
+  login: (user) => {
+    localStorage.setItem("user", JSON.stringify(user));
+
+    set({
+      user,
+      isAuthenticated: true,
+    });
+  },
+
+  logout: () => {
+    localStorage.removeItem("user");
+
+    set({
       user: null,
-
-      token: null,
-
       isAuthenticated: false,
-
-      login: (user) =>
-        set({
-          user,
-          token: "temp-token",
-          isAuthenticated: true,
-        }),
-
-      logout: () =>
-        set({
-          user: null,
-          token: null,
-          isAuthenticated: false,
-        }),
-    }),
-    {
-      name: "agrivision-auth",
-    }
-  )
-);
+    });
+  },
+}));

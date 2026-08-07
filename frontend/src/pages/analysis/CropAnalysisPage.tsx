@@ -7,7 +7,10 @@ import LocationForm from "../../components/analysis/LocationForm";
 import ResultsGrid from "../../components/analysis/ResultsGrid";
 
 import { analyzeCrop } from "../../api/analysis";
+import { saveAnalysis } from "../../api/analysisApi";
+
 import { useAnalysisStore } from "../../store/analysisStore";
+import { useAuthStore } from "../../store/authStore";
 
 export default function CropAnalysisPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -15,6 +18,8 @@ export default function CropAnalysisPage() {
   const [latitude, setLatitude] = useState("");
 
   const [longitude, setLongitude] = useState("");
+
+  const user = useAuthStore((state) => state.user);
 
   const {
     result,
@@ -24,6 +29,7 @@ export default function CropAnalysisPage() {
   } = useAnalysisStore();
 
   const handleAnalysis = async () => {
+
     if (!file) {
       alert("Please upload an image.");
       return;
@@ -34,22 +40,80 @@ export default function CropAnalysisPage() {
       return;
     }
 
+    if (!user) {
+      alert("Please login again.");
+      return;
+    }
+
     try {
+
       setLoading(true);
 
-      const response = await analyzeCrop(
+      //---------------------------------------
+      // 1. Call ML Backend
+      //---------------------------------------
+
+      const prediction = await analyzeCrop(
         file,
         Number(latitude),
         Number(longitude)
       );
 
-      setResult(response);
+      //---------------------------------------
+      // 2. Show Result Immediately
+      //---------------------------------------
+
+      setResult(prediction);
+
+      //---------------------------------------
+      // 3. Save to App Backend
+      //---------------------------------------
+
+      await saveAnalysis({
+
+        user_id: user.id,
+
+        image_name: file.name,
+
+        crop_type: prediction.crop_type,
+
+        quality: prediction.quality,
+
+        stage: prediction.stage,
+
+        stage_confidence:
+          prediction.stage_confidence,
+
+        stress_class:
+          prediction.stress_class,
+
+        stress_confidence:
+          prediction.stress_confidence,
+
+        severity:
+          prediction.severity,
+
+        severity_label:
+          prediction.severity_label,
+
+        latitude: Number(latitude),
+
+        longitude: Number(longitude),
+
+      });
+
     } catch (error) {
+
       console.error(error);
+
       alert("Analysis failed.");
+
     } finally {
+
       setLoading(false);
+
     }
+
   };
 
   return (
@@ -62,8 +126,8 @@ export default function CropAnalysisPage() {
         </h1>
 
         <p className="mt-2 text-slate-500">
-          Upload a crop image and analyze it using the AgriVision AI
-          ML service.
+          Upload a crop image and analyze it using
+          AgriVision AI.
         </p>
 
       </div>
@@ -88,28 +152,34 @@ export default function CropAnalysisPage() {
         onClick={handleAnalysis}
         disabled={loading}
       >
-        {loading ? "Analyzing..." : "Analyze Crop"}
+        {loading
+          ? "Analyzing..."
+          : "Analyze Crop"}
       </Button>
 
       {loading && (
-        <div className="rounded-2xl border bg-white p-10 text-center shadow-sm">
 
-          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+        <div className="rounded-2xl border bg-white p-10 shadow-sm text-center">
+
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"/>
 
           <h2 className="mt-6 text-xl font-semibold">
-            AI Analysis in Progress
+            AI Analysis Running...
           </h2>
 
           <p className="mt-2 text-slate-500">
-            Running image quality, crop stage, disease and severity
-            models...
+            Checking image quality,
+            crop stage,
+            disease,
+            and severity...
           </p>
 
         </div>
+
       )}
 
       {result && !loading && (
-        <ResultsGrid result={result} />
+        <ResultsGrid result={result}/>
       )}
 
     </div>

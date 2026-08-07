@@ -20,7 +20,7 @@ export default function LoginPage() {
 
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
+  const handleLogin = async (): Promise<void> => {
     try {
       setLoading(true);
 

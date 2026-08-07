@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.auth import router as auth_router
+from app.api.analysis import router as analysis_router
 
 from app.database.database import Base, engine
 
@@ -24,6 +25,7 @@ app.add_middleware(
 )
 
 app.include_router(auth_router)
+app.include_router(analysis_router)
 
 
 @app.get("/")
