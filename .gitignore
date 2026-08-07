@@ -74,7 +74,8 @@ static/uploads/
 
 # But allow these:
 !app/static/default.png
-
+!app-backend/models/
+!frontend/models/
 
 ###############################################
 # ARCHIVES / INSTALLERS
