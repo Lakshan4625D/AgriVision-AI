@@ -4,7 +4,7 @@ import Button from "../ui/Button";
 
 export default function QuickActions() {
   return (
-    <div className="rounded-2xl border bg-white p-6 shadow-sm">
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
 
       <h2 className="mb-5 text-lg font-semibold">
         Quick Actions

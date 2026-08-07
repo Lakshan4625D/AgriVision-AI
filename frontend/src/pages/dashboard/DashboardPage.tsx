@@ -1,11 +1,14 @@
 import { useEffect } from "react";
-
 import {
   Activity,
   Leaf,
   ShieldAlert,
   Target,
 } from "lucide-react";
+
+import DashboardHeader from "../../components/dashboard/DashboardHeader";
+import AIInsights from "../../components/dashboard/AIInsights";
+import Notifications from "../../components/dashboard/Notifications";
 
 import StatCard from "../../components/dashboard/StatCard";
 import RecentAnalysisTable from "../../components/dashboard/RecentAnalysisTable";
@@ -53,7 +56,7 @@ export default function DashboardPage() {
 
   if (!dashboard) {
     return (
-      <div className="rounded-2xl border bg-white p-10 text-center">
+      <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
         <h2 className="text-2xl font-semibold text-slate-700">
           No Dashboard Data
         </h2>
@@ -70,17 +73,9 @@ export default function DashboardPage() {
 
       {/* Header */}
 
-      <div>
-
-        <h1 className="text-3xl font-bold text-slate-800">
-          Welcome, {user?.full_name} 👋
-        </h1>
-
-        <p className="mt-2 text-slate-500">
-          Here's an overview of your crop analyses.
-        </p>
-
-      </div>
+      <DashboardHeader
+        name={user?.full_name ?? "User"}
+      />
 
       {/* Statistics */}
 
@@ -116,16 +111,26 @@ export default function DashboardPage() {
 
       </div>
 
-      {/* Bottom Section */}
+      {/* AI Insights & Notifications */}
 
       <div className="grid gap-8 xl:grid-cols-3">
 
         <div className="xl:col-span-2">
+          <AIInsights />
+        </div>
 
+        <Notifications />
+
+      </div>
+
+      {/* Recent Analysis + Quick Actions */}
+
+      <div className="grid gap-8 xl:grid-cols-3">
+
+        <div className="xl:col-span-2">
           <RecentAnalysisTable
             analyses={dashboard.recent_analysis}
           />
-
         </div>
 
         <QuickActions />
