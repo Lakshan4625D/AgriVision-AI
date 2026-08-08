@@ -1,10 +1,17 @@
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException
+
 from services.pipeline_service import PipelineService
 
+
 router = APIRouter()
+
 pipeline = PipelineService()
 
-# 🔥 Hardcoded polygon
+
+# ---------------------------------------------------------
+# HARDCODED POLYGON
+# ---------------------------------------------------------
+
 HARDCODED_POLYGON = [
     [23.4560, 76.5430],
     [23.4565, 76.5435],
@@ -18,8 +25,13 @@ async def predict(
     user_lat: float = Form(...),
     user_lng: float = Form(...)
 ):
+
     try:
-        # -------------------- Read Image --------------------
+
+        # -------------------------------------------------
+        # Read Image
+        # -------------------------------------------------
+
         image_bytes = await file.read()
 
         if not image_bytes or len(image_bytes) == 0:
@@ -28,18 +40,34 @@ async def predict(
                 detail="Uploaded file is empty or unreadable"
             )
 
-        # -------------------- Use Hardcoded Polygon --------------------
+        # -------------------------------------------------
+        # Use Existing Hardcoded Polygon
+        # -------------------------------------------------
+
         polygon = HARDCODED_POLYGON
 
-        # -------------------- Run Pipeline --------------------
+        # -------------------------------------------------
+        # Image MIME Type
+        # -------------------------------------------------
+
+        mime_type = file.content_type or "image/jpeg"
+
+        # -------------------------------------------------
+        # Run Pipeline
+        # -------------------------------------------------
+
         try:
+
             result = pipeline.run_pipeline(
                 image_bytes=image_bytes,
                 user_lat=user_lat,
                 user_lng=user_lng,
-                polygon_coords=polygon
+                polygon_coords=polygon,
+                mime_type=mime_type
             )
+
         except Exception as e:
+
             raise HTTPException(
                 status_code=500,
                 detail=f"Pipeline processing failed: {str(e)}"
@@ -48,9 +76,11 @@ async def predict(
         return result
 
     except HTTPException as e:
+
         raise e
 
     except Exception as e:
+
         return {
             "error": "Prediction Failed",
             "details": str(e)
