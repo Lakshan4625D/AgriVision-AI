@@ -5,6 +5,7 @@ import uvicorn
 from app.api.auth import router as auth_router
 from app.api.analysis import router as analysis_router
 from app.api.dashboard import router as dashboard_router
+from app.api.users import router as users_router
 
 from app.database.database import Base, engine
 from app.models import User, Role
@@ -34,7 +35,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(analysis_router)
 app.include_router(dashboard_router)
-
+app.include_router(users_router)
 
 @app.get("/")
 def home():

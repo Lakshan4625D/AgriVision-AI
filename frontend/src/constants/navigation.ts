@@ -38,7 +38,7 @@ export const navigation = [
     {
         title: "Users",
         icon: Users,
-        path: "/admin"
+        path: "/users"
     },
     {
         title: "Settings",
