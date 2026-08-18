@@ -5,9 +5,17 @@ import {
 } from "lucide-react";
 
 import { useSidebarStore } from "../../store/sidebarStore";
+import { useAuthStore } from "../../store/authStore";
 
 export default function Navbar() {
   const { toggleSidebar } = useSidebarStore();
+  const { user } = useAuthStore();
+
+  const fullName = user?.full_name || "User";
+  const email = user?.email || "";
+
+  // Get first letter of the user's name
+  const initial = fullName.charAt(0).toUpperCase();
 
   return (
     <header className="flex h-16 items-center justify-between border-b bg-white px-6">
@@ -45,20 +53,20 @@ export default function Navbar() {
 
         <div className="flex items-center gap-3">
 
+          {/* User Avatar */}
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 font-semibold text-white">
-
-            A
-
+            {initial}
           </div>
 
+          {/* User Information */}
           <div className="hidden md:block">
 
             <h4 className="font-semibold">
-              Administrator
+              {fullName}
             </h4>
 
             <p className="text-sm text-slate-500">
-              admin@agrivision.ai
+              {email}
             </p>
 
           </div>
