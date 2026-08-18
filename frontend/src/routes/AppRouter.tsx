@@ -10,6 +10,7 @@ import HistoryPage from "../pages/history/HistoryPage";
 import ReportsPage from "../pages/reports/ReportsPage";
 import AnalyticsPage from "../pages/analytics/AnalyticsPage";
 import AdminPage from "../pages/admin/AdminPage";
+import UsersPage from "../pages/admin/UsersPage";
 import SettingsPage from "../pages/settings/SettingsPage";
 import HelpPage from "../pages/help/HelpPage";
 
@@ -62,6 +63,11 @@ export default function AppRouter() {
             <Route
               path="/admin"
               element={<AdminPage />}
+            />
+
+            <Route
+              path="/users"
+              element={<UsersPage />}
             />
 
             <Route

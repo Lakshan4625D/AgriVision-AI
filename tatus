@@ -1,0 +1,205 @@
+[1mdiff --git a/ML_Backend/services/disease_service.py b/ML_Backend/services/disease_service.py[m
+[1mindex 6d743c0..c282b0a 100644[m
+[1m--- a/ML_Backend/services/disease_service.py[m
+[1m+++ b/ML_Backend/services/disease_service.py[m
+[36m@@ -1,49 +1,173 @@[m
+ import os[m
+[32m+[m[32mimport json[m
+ import numpy as np[m
+[31m-import tensorflow as tf[m
+[32m+[m[32mfrom ai_edge_litert.interpreter import Interpreter[m
+[32m+[m
+ from utils.preprocessing import load_and_preprocess[m
+ [m
+[31m-DISEASE_LABELS = ["healthy", "pest_damage", "water_stress"][m
+ [m
+ class DiseaseService:[m
+[32m+[m
+     def __init__(self):[m
+[31m-        BASE_DIR = os.path.dirname(os.path.abspath(__file__))[m
+[31m-        model_path = os.path.join(BASE_DIR, "..", "models", "stress_classifier.tflite")[m
+[31m-        model_path = os.path.normpath(model_path)[m
+ [m
+[31m-        print("\n🔹 Loading TFLite Stress Model:", model_path)[m
+[32m+[m[32m        base_dir = os.path.dirname([m
+[32m+[m[32m            os.path.abspath(__file__)[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        models_dir = os.path.normpath([m
+[32m+[m[32m            os.path.join([m
+[32m+[m[32m                base_dir,[m
+[32m+[m[32m                "..",[m
+[32m+[m[32m                "models"[m
+[32m+[m[32m            )[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        model_path = os.path.join([m
+[32m+[m[32m            models_dir,[m
+[32m+[m[32m            "agrivision_final_best.tflite"[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        class_path = os.path.join([m
+[32m+[m[32m            models_dir,[m
+[32m+[m[32m            "class_indices.json"[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        if not os.path.exists(model_path):[m
+[32m+[m[32m            raise FileNotFoundError([m
+[32m+[m[32m                f"TFLite model not found: {model_path}"[m
+[32m+[m[32m            )[m
+[32m+[m
+[32m+[m[32m        if not os.path.exists(class_path):[m
+[32m+[m[32m            raise FileNotFoundError([m
+[32m+[m[32m                f"Class mapping not found: {class_path}"[m
+[32m+[m[32m            )[m
+[32m+[m
+[32m+[m[32m        print([m
+[32m+[m[32m            "\nLoading AgriVision TFLite model:",[m
+[32m+[m[32m            model_path[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        self.interpreter = Interpreter([m
+[32m+[m[32m        model_path=model_path[m
+[32m+[m[32m)[m
+ [m
+[31m-        # Load TFLite interpreter[m
+[31m-        self.interpreter = tf.lite.Interpreter(model_path=model_path)[m
+         self.interpreter.allocate_tensors()[m
+ [m
+[31m-        # Get model input/output structure[m
+[31m-        self.input_details = self.interpreter.get_input_details()[m
+[31m-        self.output_details = self.interpreter.get_output_details()[m
+[32m+[m[32m        self.input_details = ([m
+[32m+[m[32m            self.interpreter.get_input_details()[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        self.output_details = ([m
+[32m+[m[32m            self.interpreter.get_output_details()[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        with open([m
+[32m+[m[32m            class_path,[m
+[32m+[m[32m            "r",[m
+[32m+[m[32m            encoding="utf-8"[m
+[32m+[m[32m        ) as f:[m
+[32m+[m
+[32m+[m[32m            class_indices = json.load(f)[m
+[32m+[m
+[32m+[m[32m        # class_indices.json is:[m
+[32m+[m[32m        #[m
+[32m+[m[32m        # {[m
+[32m+[m[32m        #   "Apple___Apple Scab": 0,[m
+[32m+[m[32m        #   ...[m
+[32m+[m[32m        # }[m
+[32m+[m[32m        #[m
+[32m+[m[32m        # Convert to:[m
+[32m+[m[32m        #[m
+[32m+[m[32m        # {[m
+[32m+[m[32m        #   0: "Apple___Apple Scab"[m
+[32m+[m[32m        # }[m
+[32m+[m
+[32m+[m[32m        self.index_to_class = {[m
+[32m+[m[32m            int(index): label[m
+[32m+[m[32m            for label, index[m
+[32m+[m[32m            in class_indices.items()[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        output_shape = ([m
+[32m+[m[32m            self.output_details[0]["shape"][m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        output_classes = int([m
+[32m+[m[32m            output_shape[-1][m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        if output_classes != len([m
+[32m+[m[32m            self.index_to_class[m
+[32m+[m[32m        ):[m
+[32m+[m[32m            raise ValueError([m
+[32m+[m[32m                "Model output classes do not match "[m
+[32m+[m[32m                "class_indices.json. "[m
+[32m+[m[32m                f"Model={output_classes}, "[m
+[32m+[m[32m                f"Mapping={len(self.index_to_class)}"[m
+[32m+[m[32m            )[m
+[32m+[m
+[32m+[m[32m        print([m
+[32m+[m[32m            f"AgriVision model loaded with "[m
+[32m+[m[32m            f"{output_classes} classes."[m
+[32m+[m[32m        )[m
+ [m
+     def predict(self, image_bytes):[m
+[31m-        """[m
+[31m-        Predict disease/stress class from raw uploaded bytes.[m
+[31m-        """[m
+ [m
+[31m-        # STEP 1 — Preprocess: returns (1,224,224,3) float32 array[m
+[31m-        processed = load_and_preprocess(image_bytes, return_raw=False)[m
+[32m+[m[32m        processed = load_and_preprocess([m
+[32m+[m[32m            image_bytes,[m
+[32m+[m[32m            return_raw=False,[m
+[32m+[m[32m            normalize=False[m
+[32m+[m[32m        )[m
+ [m
+[31m-        # STEP 2 — Match TFLite model dtype[m
+[31m-        input_dtype = self.input_details[0]["dtype"][m
+[31m-        processed = processed.astype(input_dtype)[m
+[32m+[m[32m        input_dtype = ([m
+[32m+[m[32m            self.input_details[0]["dtype"][m
+[32m+[m[32m        )[m
+ [m
+[31m-        # STEP 3 — Set interpreter input[m
+[31m-        self.interpreter.set_tensor(self.input_details[0]["index"], processed)[m
+[32m+[m[32m        processed = processed.astype([m
+[32m+[m[32m            input_dtype[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        self.interpreter.set_tensor([m
+[32m+[m[32m            self.input_details[0]["index"],[m
+[32m+[m[32m            processed[m
+[32m+[m[32m        )[m
+ [m
+[31m-        # STEP 4 — Run inference[m
+         self.interpreter.invoke()[m
+ [m
+[31m-        # STEP 5 — Get model predictions[m
+[31m-        output = self.interpreter.get_tensor(self.output_details[0]["index"])[m
+[31m-        output = output[0]  # shape: (3,)[m
+[32m+[m[32m        output = self.interpreter.get_tensor([m
+[32m+[m[32m            self.output_details[0]["index"][m
+[32m+[m[32m        )[0][m
+[32m+[m
+[32m+[m[32m        predicted_index = int([m
+[32m+[m[32m            np.argmax(output)[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        confidence = float([m
+[32m+[m[32m            output[predicted_index][m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        combined_label = ([m
+[32m+[m[32m            self.index_to_class[[m
+[32m+[m[32m                predicted_index[m
+[32m+[m[32m            ][m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        if "___" not in combined_label:[m
+[32m+[m[32m            raise ValueError([m
+[32m+[m[32m                f"Invalid combined class label: "[m
+[32m+[m[32m                f"{combined_label}"[m
+[32m+[m[32m            )[m
+ [m
+[31m-        pred_idx = int(np.argmax(output))[m
+[31m-        confidence = float(output[pred_idx])[m
+[32m+[m[32m        crop_type, stress_class = ([m
+[32m+[m[32m            combined_label.split([m
+[32m+[m[32m                "___",[m
+[32m+[m[32m                1[m
+[32m+[m[32m            )[m
+[32m+[m[32m        )[m
+ [m
+[31m-        return DISEASE_LABELS[pred_idx], confidence[m
+[32m+[m[32m        return {[m
+[32m+[m[32m            "crop_type": crop_type.strip(),[m
+[32m+[m[32m            "stress_class": stress_class.strip(),[m
+[32m+[m[32m            "stress_confidence": confidence,[m
+[32m+[

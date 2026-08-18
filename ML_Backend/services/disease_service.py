@@ -1,49 +1,173 @@
 import os
+import json
 import numpy as np
-import tensorflow as tf
+from ai_edge_litert.interpreter import Interpreter
+
 from utils.preprocessing import load_and_preprocess
 
-DISEASE_LABELS = ["healthy", "pest_damage", "water_stress"]
 
 class DiseaseService:
+
     def __init__(self):
-        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-        model_path = os.path.join(BASE_DIR, "..", "models", "stress_classifier.tflite")
-        model_path = os.path.normpath(model_path)
 
-        print("\n🔹 Loading TFLite Stress Model:", model_path)
+        base_dir = os.path.dirname(
+            os.path.abspath(__file__)
+        )
 
-        # Load TFLite interpreter
-        self.interpreter = tf.lite.Interpreter(model_path=model_path)
+        models_dir = os.path.normpath(
+            os.path.join(
+                base_dir,
+                "..",
+                "models"
+            )
+        )
+
+        model_path = os.path.join(
+            models_dir,
+            "agrivision_final_best.tflite"
+        )
+
+        class_path = os.path.join(
+            models_dir,
+            "class_indices.json"
+        )
+
+        if not os.path.exists(model_path):
+            raise FileNotFoundError(
+                f"TFLite model not found: {model_path}"
+            )
+
+        if not os.path.exists(class_path):
+            raise FileNotFoundError(
+                f"Class mapping not found: {class_path}"
+            )
+
+        print(
+            "\nLoading AgriVision TFLite model:",
+            model_path
+        )
+
+        self.interpreter = Interpreter(
+        model_path=model_path
+)
+
         self.interpreter.allocate_tensors()
 
-        # Get model input/output structure
-        self.input_details = self.interpreter.get_input_details()
-        self.output_details = self.interpreter.get_output_details()
+        self.input_details = (
+            self.interpreter.get_input_details()
+        )
+
+        self.output_details = (
+            self.interpreter.get_output_details()
+        )
+
+        with open(
+            class_path,
+            "r",
+            encoding="utf-8"
+        ) as f:
+
+            class_indices = json.load(f)
+
+        # class_indices.json is:
+        #
+        # {
+        #   "Apple___Apple Scab": 0,
+        #   ...
+        # }
+        #
+        # Convert to:
+        #
+        # {
+        #   0: "Apple___Apple Scab"
+        # }
+
+        self.index_to_class = {
+            int(index): label
+            for label, index
+            in class_indices.items()
+        }
+
+        output_shape = (
+            self.output_details[0]["shape"]
+        )
+
+        output_classes = int(
+            output_shape[-1]
+        )
+
+        if output_classes != len(
+            self.index_to_class
+        ):
+            raise ValueError(
+                "Model output classes do not match "
+                "class_indices.json. "
+                f"Model={output_classes}, "
+                f"Mapping={len(self.index_to_class)}"
+            )
+
+        print(
+            f"AgriVision model loaded with "
+            f"{output_classes} classes."
+        )
 
     def predict(self, image_bytes):
-        """
-        Predict disease/stress class from raw uploaded bytes.
-        """
 
-        # STEP 1 — Preprocess: returns (1,224,224,3) float32 array
-        processed = load_and_preprocess(image_bytes, return_raw=False)
+        processed = load_and_preprocess(
+            image_bytes,
+            return_raw=False,
+            normalize=False
+        )
 
-        # STEP 2 — Match TFLite model dtype
-        input_dtype = self.input_details[0]["dtype"]
-        processed = processed.astype(input_dtype)
+        input_dtype = (
+            self.input_details[0]["dtype"]
+        )
 
-        # STEP 3 — Set interpreter input
-        self.interpreter.set_tensor(self.input_details[0]["index"], processed)
+        processed = processed.astype(
+            input_dtype
+        )
 
-        # STEP 4 — Run inference
+        self.interpreter.set_tensor(
+            self.input_details[0]["index"],
+            processed
+        )
+
         self.interpreter.invoke()
 
-        # STEP 5 — Get model predictions
-        output = self.interpreter.get_tensor(self.output_details[0]["index"])
-        output = output[0]  # shape: (3,)
+        output = self.interpreter.get_tensor(
+            self.output_details[0]["index"]
+        )[0]
 
-        pred_idx = int(np.argmax(output))
-        confidence = float(output[pred_idx])
+        predicted_index = int(
+            np.argmax(output)
+        )
 
-        return DISEASE_LABELS[pred_idx], confidence
+        confidence = float(
+            output[predicted_index]
+        )
+
+        combined_label = (
+            self.index_to_class[
+                predicted_index
+            ]
+        )
+
+        if "___" not in combined_label:
+            raise ValueError(
+                f"Invalid combined class label: "
+                f"{combined_label}"
+            )
+
+        crop_type, stress_class = (
+            combined_label.split(
+                "___",
+                1
+            )
+        )
+
+        return {
+            "crop_type": crop_type.strip(),
+            "stress_class": stress_class.strip(),
+            "stress_confidence": confidence,
+            "class_index": predicted_index
+        }

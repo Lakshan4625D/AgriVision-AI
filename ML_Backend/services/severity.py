@@ -1,74 +1,123 @@
-import numpy as np
 import cv2
+import numpy as np
+
 
 class SeverityService:
 
     def __init__(self):
-        print("SeverityService loaded (improved rule-based).")
 
-    def compute(self, raw_img, stress_class: str):
-        """
-        raw_img: numpy array (H,W,3)
-        """
+        print(
+            "SeverityService loaded "
+            "(generic crop-disease heuristic)."
+        )
 
-        if raw_img is None or raw_img.size == 0:
+    def compute(
+        self,
+        raw_img,
+        stress_class
+    ):
+
+        if (
+            raw_img is None
+            or raw_img.size == 0
+        ):
             return 0.0, "unknown"
 
-        # Convert RGB → BGR for OpenCV
-        img = cv2.cvtColor(raw_img, cv2.COLOR_RGB2BGR)
+        stress_name = (
+            stress_class
+            .strip()
+            .lower()
+        )
 
-        h, w, _ = img.shape
+        # Healthy class
+        if stress_name == "healthy":
 
-        # HSV for color-based stress detection
-        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-        H, S, V = hsv[:, :, 0], hsv[:, :, 1], hsv[:, :, 2]
-
-        # NORMALIZATION HELPERS
-        total_pixels = h * w
-        eps = 1e-6
-
-        # ======================================
-        # 1️⃣ HEALTHY CASE
-        # ======================================
-        if stress_class == "healthy":
             return 0.05, "none"
 
-        # ======================================
-        # 2️⃣ PEST DAMAGE (dark brown / black spots)
-        # ======================================
-        if stress_class == "pest_damage":
-            # Very strict filter now
-            mask = (V < 90) & (S > 80)
+        img = cv2.cvtColor(
+            raw_img,
+            cv2.COLOR_RGB2BGR
+        )
 
-            ratio = np.sum(mask) / total_pixels
+        hsv = cv2.cvtColor(
+            img,
+            cv2.COLOR_BGR2HSV
+        )
 
-            # smoother normalization
-            severity = ratio * 1.8    # was 3.5 → too aggressive
-            severity = np.clip(severity, 0, 1)
+        h = hsv[:, :, 0]
+        s = hsv[:, :, 1]
+        v = hsv[:, :, 2]
 
-        # ======================================
-        # 3️⃣ WATER STRESS (yellow patches)
-        # ======================================
-        elif stress_class == "water_stress":
-            # more strict yellow detection
-            mask = (H > 22) & (H < 32) & (S > 70) & (V > 120)
+        total_pixels = (
+            raw_img.shape[0]
+            * raw_img.shape[1]
+        )
 
-            ratio = np.sum(mask) / total_pixels
+        # Brown / dark lesion areas
+        brown_mask = (
+            (h >= 5)
+            & (h <= 25)
+            & (s >= 45)
+            & (v >= 30)
+            & (v <= 210)
+        )
 
-            severity = ratio * 1.4   # was 2.5 → too aggressive
-            severity = np.clip(severity, 0, 1)
+        # Yellow/chlorotic regions
+        yellow_mask = (
+            (h >= 20)
+            & (h <= 40)
+            & (s >= 50)
+            & (v >= 100)
+        )
 
-        else:
-            return 0.0, "unknown"
+        # Very dark necrotic regions
+        dark_mask = (
+            (v < 80)
+            & (s > 40)
+        )
 
-        # ==============================
-        # LABELING BASED ON SEVERITY
-        # ==============================
+        affected_mask = (
+            brown_mask
+            | yellow_mask
+            | dark_mask
+        )
+
+        affected_ratio = (
+            np.count_nonzero(
+                affected_mask
+            )
+            / max(total_pixels, 1)
+        )
+
+        # Scale because disease lesions may
+        # occupy only part of the visible leaf.
+        severity = np.clip(
+            affected_ratio * 1.8,
+            0.0,
+            1.0
+        )
+
+        severity = float(
+            severity
+        )
+
         if severity < 0.15:
+
             label = "mild"
+
         elif severity < 0.45:
+
             label = "moderate"
-        else:
+
+        elif severity < 0.75:
+
             label = "severe"
 
-        return round(float(severity), 3), label
+        else:
+
+            label = "critical"
+
+        return (
+            round(severity, 3),
+            label
+        )

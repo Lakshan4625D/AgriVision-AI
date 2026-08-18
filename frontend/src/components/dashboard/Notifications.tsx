@@ -9,15 +9,15 @@ export default function Notifications() {
       <div className="mt-6 space-y-4">
 
         <div className="rounded-lg bg-slate-50 p-4">
-          🌱 New crop analysis completed successfully.
+          New crop analysis completed successfully.
         </div>
 
         <div className="rounded-lg bg-slate-50 p-4">
-          📈 Dashboard statistics updated.
+          Dashboard statistics updated.
         </div>
 
         <div className="rounded-lg bg-slate-50 p-4">
-          🤖 AI models are running normally.
+          AI models are running normally.
         </div>
 
       </div>

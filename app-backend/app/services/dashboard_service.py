@@ -16,7 +16,7 @@ def get_dashboard(db: Session, user_id: int):
         db.query(Analysis)
         .filter(
             Analysis.user_id == user_id,
-            Analysis.stress_class == "Healthy",
+            func.lower(Analysis.severity_label) == "healthy",
         )
         .count()
     )

@@ -39,6 +39,8 @@ export default function DashboardPage() {
 
         const data = await getDashboard(user.id);
 
+        console.log("Dashboard API Data:", data);
+
         setDashboard(data);
       } catch (error) {
         console.error("Dashboard Error:", error);
@@ -104,7 +106,7 @@ export default function DashboardPage() {
 
         <StatCard
           title="Average Confidence"
-          value={`${dashboard.avg_confidence}%`}
+          value={`${(dashboard.avg_confidence * 100).toFixed(0)}%`}
           icon={<Target size={26} />}
           color="bg-purple-600"
         />
@@ -116,7 +118,7 @@ export default function DashboardPage() {
       <div className="grid gap-8 xl:grid-cols-3">
 
         <div className="xl:col-span-2">
-          <AIInsights />
+          <AIInsights dashboard={dashboard} />
         </div>
 
         <Notifications />
