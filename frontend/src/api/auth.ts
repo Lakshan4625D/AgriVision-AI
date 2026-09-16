@@ -5,6 +5,7 @@ export interface User {
   full_name: string;
   email: string;
   role_id: number;
+  is_admin: boolean;
 }
 
 export interface LoginRequest {
@@ -23,6 +24,7 @@ export interface LoginResponse {
   success: boolean;
   message: string;
   user: User;
+  access_token: string;
 }
 
 export interface RegisterResponse {
@@ -31,10 +33,10 @@ export interface RegisterResponse {
 }
 
 export async function login(
-  data: LoginRequest
+  data: LoginRequest, adminOnly = false
 ): Promise<LoginResponse> {
   const response = await api.post<LoginResponse>(
-    "/auth/login",
+    adminOnly ? "/auth/admin/login" : "/auth/login",
     data
   );
 

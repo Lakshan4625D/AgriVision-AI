@@ -10,7 +10,7 @@ import Button from "../../components/ui/Button";
 import { login } from "../../api/auth";
 import { useAuthStore } from "../../store/authStore";
 
-export default function LoginPage() {
+export default function LoginPage({ adminOnly = false }: { adminOnly?: boolean }) {
   const navigate = useNavigate();
 
   const loginStore = useAuthStore((state) => state.login);
@@ -27,18 +27,18 @@ export default function LoginPage() {
       const response = await login({
         email,
         password,
-      });
+      }, adminOnly);
 
       if (response.success) {
-        loginStore(response.user);
+        loginStore(response.user, response.access_token);
 
-        navigate("/dashboard");
+        navigate(response.user.is_admin ? "/admin" : "/dashboard");
       } else {
         alert(response.message);
       }
     } catch (error) {
       console.error(error);
-      alert("Unable to connect to server.");
+      alert("Sign-in failed. Check your credentials and account access, or try again later.");
     } finally {
       setLoading(false);
     }
@@ -48,14 +48,15 @@ export default function LoginPage() {
     <AuthLayout>
       <Card className="max-w-md">
         <Logo />
+        {!adminOnly && <Link className="mt-4 block text-sm text-blue-700" to="/admin/login">Bank representative login</Link>}
 
         <div className="mt-8">
           <h2 className="text-3xl font-bold text-slate-800">
-            Welcome Back
+            {adminOnly ? "Bank representative login" : "Welcome Back"}
           </h2>
 
           <p className="mt-2 text-slate-500">
-            Sign in to continue to AgriVision AI
+            {adminOnly ? "Authorized PMFBY administrators only" : "Sign in to continue to AgriVision AI"}
           </p>
         </div>
 
@@ -108,12 +109,12 @@ export default function LoginPage() {
           </Button>
 
           <div className="text-center text-sm text-slate-500">
-            Don't have an account?{" "}
+            {adminOnly ? "Need access? Contact your system operator. " : "Don?t have an account? "}
             <Link
-              to="/register"
+              to={adminOnly ? "/login" : "/register"}
               className="font-semibold text-blue-600 hover:text-blue-700"
             >
-              Register
+              {adminOnly ? "Farmer login" : "Register"}
             </Link>
           </div>
         </div>

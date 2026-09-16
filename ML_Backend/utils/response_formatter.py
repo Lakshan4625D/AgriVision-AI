@@ -88,5 +88,6 @@ def final_response_from_gemini(gemini_result: dict):
             float(severity),
             3
         ),
+        "ai_explanation": " ".join(str(part).strip() for part in [health_status.get("reason", ""), disease.get("reason", "")] if part)[:6000],
         "severity_label": severity_label
     }

@@ -9,6 +9,7 @@ import CropAnalysisPage from "../pages/analysis/CropAnalysisPage";
 import HistoryPage from "../pages/history/HistoryPage";
 import ReportsPage from "../pages/reports/ReportsPage";
 import AnalyticsPage from "../pages/analytics/AnalyticsPage";
+import AdminRoute from "./AdminRoute";
 import AdminPage from "../pages/admin/AdminPage";
 import SettingsPage from "../pages/settings/SettingsPage";
 import HelpPage from "../pages/help/HelpPage";
@@ -31,6 +32,8 @@ export default function AppRouter() {
           element={<ForgotPasswordPage />}
         />
 
+        <Route path="/admin/login" element={<LoginPage adminOnly />} />
+        <Route element={<AdminRoute />}><Route path="/admin" element={<AdminPage />} /></Route>
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
@@ -59,10 +62,7 @@ export default function AppRouter() {
               element={<AnalyticsPage />}
             />
 
-            <Route
-              path="/admin"
-              element={<AdminPage />}
-            />
+
 
             <Route
               path="/settings"

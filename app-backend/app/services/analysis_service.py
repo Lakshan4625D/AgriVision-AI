@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.models.analysis import Analysis
+from app.models.scan_explanation import ScanExplanation
 from app.schemas.analysis import AnalysisCreate
 
 
@@ -9,9 +10,12 @@ def create_analysis(
     data: AnalysisCreate,
 ):
 
-    analysis = Analysis(**data.model_dump())
+    analysis = Analysis(**data.model_dump(exclude={"ai_explanation"}))
 
     db.add(analysis)
+    db.flush()
+    if data.ai_explanation:
+        db.add(ScanExplanation(analysis_id=analysis.id, explanation=data.ai_explanation))
 
     db.commit()
 

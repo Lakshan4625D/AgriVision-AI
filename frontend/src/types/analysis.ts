@@ -21,6 +21,10 @@ export interface AnalysisRequest {
 }
 
 export interface AnalysisResponse extends AnalysisRequest {
+  success?: boolean;
+  message?: string;
+  instruction?: string;
+  ai_explanation?: string;
   id: number;
   created_at: string;
 }

@@ -2,6 +2,7 @@ import api from "./axios";
 
 export interface SaveAnalysisRequest {
   user_id: number;
+  ai_explanation?: string;
 
   image_name: string;
 

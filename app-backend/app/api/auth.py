@@ -1,3 +1,4 @@
+from app.core.security import current_user, public_user
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -25,3 +26,11 @@ def login(
     db: Session = Depends(get_db),
 ):
     return login_user(db, data)
+
+@router.post("/admin/login")
+def admin_login(data: LoginRequest, db: Session = Depends(get_db)):
+    return login_user(db, data, admin_only=True)
+
+@router.get("/me")
+def me(user = Depends(current_user)):
+    return public_user(user)

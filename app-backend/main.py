@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
+from app.api.admin import router as admin_router
 from app.api.auth import router as auth_router
 from app.api.analysis import router as analysis_router
 from app.api.dashboard import router as dashboard_router
@@ -32,6 +33,7 @@ app.add_middleware(
 
 # API routers
 app.include_router(auth_router)
+app.include_router(admin_router)
 app.include_router(analysis_router)
 app.include_router(dashboard_router)
 

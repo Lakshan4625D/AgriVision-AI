@@ -12,6 +12,7 @@ export default function Sidebar() {
 
   const { isOpen } = useSidebarStore();
 
+  const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
 
   const handleLogout = () => {
@@ -31,7 +32,7 @@ export default function Sidebar() {
 
       <nav className="flex h-[calc(100vh-90px)] flex-col justify-between p-3">
         <div>
-          {navigation.map((item) => {
+          {navigation.filter(item => item.path !== "/admin" || user?.is_admin).map((item) => {
             const Icon = item.icon;
 
             return (
