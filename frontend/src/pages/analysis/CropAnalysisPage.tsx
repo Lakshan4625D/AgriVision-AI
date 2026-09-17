@@ -64,6 +64,7 @@ export default function CropAnalysisPage() {
       //---------------------------------------
 
       setResult(prediction);
+      if (prediction.success === false) return;
 
       //---------------------------------------
       // 3. Save to App Backend
@@ -72,6 +73,7 @@ export default function CropAnalysisPage() {
       await saveAnalysis({
 
         user_id: user.id,
+        ai_explanation: prediction.ai_explanation,
 
         image_name: file.name,
 

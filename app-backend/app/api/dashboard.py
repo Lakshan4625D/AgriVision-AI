@@ -1,3 +1,4 @@
+from app.core.security import current_user, require_owner
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -14,5 +15,7 @@ router = APIRouter(
 def dashboard(
     user_id: int,
     db: Session = Depends(get_db),
+    user = Depends(current_user),
 ):
+    require_owner(user, user_id)
     return get_dashboard(db, user_id)

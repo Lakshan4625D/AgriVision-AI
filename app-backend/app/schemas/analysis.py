@@ -1,9 +1,11 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class AnalysisCreate(BaseModel):
+
+    ai_explanation: str | None = Field(default=None, max_length=6000)
 
     user_id: int
 
