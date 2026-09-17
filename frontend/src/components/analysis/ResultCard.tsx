@@ -1,6 +1,8 @@
+import type { ReactNode } from "react";
+
 interface Props {
   title: string;
-  value: string | number;
+  value: ReactNode;
 }
 
 export default function ResultCard({

@@ -1,3 +1,4 @@
+import SeverityBadge from "../ui/SeverityBadge";
 import type { Report } from "../../types/reports";
 
 import Button from "../ui/Button";
@@ -26,18 +27,7 @@ export default function ReportRow({
 
       <td className="px-5 py-4">
 
-        <span
-          className={`rounded-full px-3 py-1 text-sm font-medium
-          ${
-            report.severity_label.toLowerCase() === "low"
-              ? "bg-green-100 text-green-700"
-              : report.severity_label.toLowerCase() === "medium"
-              ? "bg-yellow-100 text-yellow-700"
-              : "bg-red-100 text-red-700"
-          }`}
-        >
-          {report.severity_label}
-        </span>
+        <SeverityBadge label={report.severity_label} />
 
       </td>
 

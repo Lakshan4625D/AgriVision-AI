@@ -1,3 +1,4 @@
+import SeverityBadge from "../ui/SeverityBadge";
 import type { AnalysisResponse } from "../../types/analysis";
 
 import ResultCard from "./ResultCard";
@@ -65,7 +66,7 @@ export default function ResultsGrid({
 
       <ResultCard
         title="Severity Level"
-        value={result.severity_label}
+        value={<SeverityBadge label={result.severity_label} />}
       />
 
     </div>

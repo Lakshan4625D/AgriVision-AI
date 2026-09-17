@@ -1,3 +1,6 @@
+from utils.severity import severity_label_for_score
+
+
 def format_quality_response(quality_label: str):
     """
     Returned when Gemini determines that the image
@@ -89,5 +92,5 @@ def final_response_from_gemini(gemini_result: dict):
             3
         ),
         "ai_explanation": " ".join(str(part).strip() for part in [health_status.get("reason", ""), disease.get("reason", "")] if part)[:6000],
-        "severity_label": severity_label
+        "severity_label": severity_label_for_score(severity, severity_label)
     }

@@ -1,3 +1,4 @@
+import { getSeverityStyle } from "../ui/severityStyles";
 import {
   PieChart,
   Pie,
@@ -13,11 +14,6 @@ interface Props {
   }[];
 }
 
-const COLORS = [
-  "#22c55e",
-  "#f59e0b",
-  "#ef4444",
-];
 
 export default function SeverityChart({
   data,
@@ -43,11 +39,11 @@ export default function SeverityChart({
               label
             >
 
-              {data.map((_, index) => (
+              {data.map((entry, index) => (
 
                 <Cell
                   key={index}
-                  fill={COLORS[index % COLORS.length]}
+                  fill={getSeverityStyle(entry.name).color}
                 />
 
               ))}

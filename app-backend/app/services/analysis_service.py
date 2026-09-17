@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.models.analysis import Analysis
 from app.models.scan_explanation import ScanExplanation
 from app.schemas.analysis import AnalysisCreate
+from app.services.severity import severity_label_for_score
 
 
 def create_analysis(
@@ -10,7 +11,9 @@ def create_analysis(
     data: AnalysisCreate,
 ):
 
-    analysis = Analysis(**data.model_dump(exclude={"ai_explanation"}))
+    values = data.model_dump(exclude={"ai_explanation"})
+    values["severity_label"] = severity_label_for_score(data.severity, data.severity_label)
+    analysis = Analysis(**values)
 
     db.add(analysis)
     db.flush()

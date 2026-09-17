@@ -36,10 +36,13 @@ export default function HistoryFilters({
           className="rounded-xl border border-slate-300 px-4 py-3"
         >
           <option value="">All Severity</option>
-          <option value="low">Low</option>
+          <option value="healthy">Healthy</option>
+          <option value="very mild">Very Mild</option>
           <option value="mild">Mild</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
+          <option value="moderate">Moderate</option>
+          <option value="severe">Severe</option>
+          <option value="critical">Critical</option>
+          <option value="unknown">Unknown</option>
         </select>
 
         <select

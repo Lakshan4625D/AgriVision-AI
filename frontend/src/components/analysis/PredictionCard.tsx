@@ -1,3 +1,4 @@
+import SeverityBadge from "../ui/SeverityBadge";
 import Card from "../ui/Card";
 import type { PredictionResult } from "../../types/prediction";
 
@@ -79,9 +80,7 @@ export default function PredictionCard({ result }: Props) {
             Severity
           </p>
 
-          <p className="font-semibold">
-            {result.severity_label}
-          </p>
+          <SeverityBadge label={result.severity_label} />
         </div>
 
       </div>
